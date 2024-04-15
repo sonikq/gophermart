@@ -13,6 +13,7 @@ type IGophermartService interface {
 	Login(ctx context.Context, request models.LoginRequest) error
 	UploadOrder(ctx context.Context, orderNum string, username string) error
 	ListUserOrders(ctx context.Context, username string) ([]models.Order, error)
+	GetBalance(ctx context.Context, username string) (models.Balance, error)
 }
 
 type Service struct {

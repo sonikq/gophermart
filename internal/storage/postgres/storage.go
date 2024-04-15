@@ -125,7 +125,7 @@ func (ps *Storage) ListUserOrders(ctx context.Context, username string) ([]model
 		orders = append(orders, order)
 	}
 
-	if rows.Err != nil {
+	if rows.Err() != nil {
 		return nil, fmt.Errorf("error in reading rows: %w", err)
 	}
 
@@ -150,7 +150,47 @@ func (ps *Storage) UpdateOrders(ctx context.Context, username string, infos []mo
 		if err != nil {
 			return fmt.Errorf("error in executing update order query: %w", err)
 		}
+
+		_, err = tx.Exec(ctx, updateBalanceQuery, username, info.Accrual)
+		if err != nil {
+			return fmt.Errorf("error in executing update balance query: %w", err)
+		}
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (ps *Storage) GetBalance(ctx context.Context, username string) (models.Balance, error) {
+	var balance models.Balance
+	err := ps.pool.QueryRow(ctx, getUserBalanceQuery, username).Scan(&balance.Current, &balance.Withdrawn)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return models.Balance{}, nil
+		}
+		return models.Balance{}, fmt.Errorf("error in executing get balance query: %w", err)
+	}
+	return balance, nil
+}
+
+func (ps *Storage) GetWithdrawals(ctx context.Context, username string) ([]models.Withdrawal, error) {
+	rows, err := ps.pool.Query(ctx, getWithdrawalsQuery, username)
+	if err != nil {
+		return nil, fmt.Errorf("error in executing pool.Query(): %w", err)
+	}
+
+	var withdrawals []models.Withdrawal
+	for rows.Next() {
+		var withdrawal models.Withdrawal
+		if err = rows.Scan(&withdrawal.Order, &withdrawal.Sum, &withdrawal.ProcessedAt); err != nil {
+			return nil, err
+		}
+
+		withdrawals = append(withdrawals, withdrawal)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error in reading rows: %w", rows.Err())
+	}
+
+	return withdrawals, nil
 }

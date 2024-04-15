@@ -18,8 +18,6 @@ cmd/gophermart/gophermart
 # Dependency directories (remove the comment below to include it)
 vendor/
 
-internal/storage/postgres/migration/
-
 # IDEs directories
 .idea
 .vscode

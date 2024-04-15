@@ -49,6 +49,7 @@ func NewRouter(option Option) *gin.Engine {
 	{
 		authorized.POST("/orders", h.Gophermart.UploadOrder)
 		authorized.GET("/orders", h.Gophermart.ListOrders)
+		authorized.GET("/balance", h.Gophermart.GetBalance)
 		// TODO: implement missing handlers with auth
 	}
 
