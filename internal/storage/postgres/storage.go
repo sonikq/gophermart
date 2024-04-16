@@ -219,5 +219,5 @@ func (ps *Storage) Withdraw(ctx context.Context, username, order string, sum, de
 		return fmt.Errorf("error in withdrawn query: %w", err)
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
