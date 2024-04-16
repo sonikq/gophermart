@@ -13,5 +13,5 @@ const (
 	withdrawnQuery      = `INSERT INTO balances(order_num, username, current_balance, withdrawal_sum, withdraw_processed_at)
 								VALUES ($1, $2, $3, $4, $5)
 								ON CONFLICT (username) DO UPDATE
-								SET order_num = $1, current_balance = $3, withdrawn = $4, withdraw_processed_at = $5;`
+								SET order_num = $1, current_balance = $3, withdrawal_sum = $4, withdraw_processed_at = $5;`
 )
