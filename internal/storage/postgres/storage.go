@@ -151,7 +151,7 @@ func (ps *Storage) UpdateOrders(ctx context.Context, username string, infos []mo
 			return fmt.Errorf("error in executing update order query: %w", err)
 		}
 
-		_, err = tx.Exec(ctx, updateBalanceQuery, info.Order, username, info.Accrual)
+		_, err = tx.Exec(ctx, updateBalanceQuery, username, info.Accrual)
 		if err != nil {
 			return fmt.Errorf("error in executing update balance query: %w", err)
 		}
@@ -199,7 +199,22 @@ func (ps *Storage) GetWithdrawals(ctx context.Context, username string) ([]model
 
 // Withdraw - Request for debiting funds
 func (ps *Storage) Withdraw(ctx context.Context, username, order string, sum, delta float64) error {
-	_, err := ps.pool.Exec(ctx, withdrawnQuery, order, username, delta, sum, time.Now())
+	tx, err := ps.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("error while begin transaction: %w", err)
+	}
+	defer func() {
+		if errRollBack := tx.Rollback(ctx); errRollBack != nil {
+			fmt.Printf("rollback error: %v", errRollBack)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, decrementBalanceQuery, username, delta, sum)
+	if err != nil {
+		return fmt.Errorf("error in decrement balance query: %w", err)
+	}
+
+	_, err = tx.Exec(ctx, withdrawnQuery, order, username, sum, time.Now())
 	if err != nil {
 		return fmt.Errorf("error in withdrawn query: %w", err)
 	}
