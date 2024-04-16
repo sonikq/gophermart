@@ -151,7 +151,7 @@ func (ps *Storage) UpdateOrders(ctx context.Context, username string, infos []mo
 			return fmt.Errorf("error in executing update order query: %w", err)
 		}
 
-		_, err = tx.Exec(ctx, updateBalanceQuery, username, info.Accrual)
+		_, err = tx.Exec(ctx, updateBalanceQuery, info.Order, username, info.Accrual)
 		if err != nil {
 			return fmt.Errorf("error in executing update balance query: %w", err)
 		}
