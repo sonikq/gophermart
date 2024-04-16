@@ -12,6 +12,16 @@ import (
 func (h *Handler) UploadOrder(ctx *gin.Context) {
 	const source = "handler.UploadOrder"
 
+	username, err := getUsername(ctx)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": models.ErrNotAuthenticated.Error()})
+		h.logger.Error().
+			Err(err).
+			Str("source", source).
+			Send()
+		return
+	}
+
 	if ctx.GetHeader(contentTypeHeaderKey) != contentTypeTextPlain {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid type of content"})
 		h.logger.Error().
@@ -23,29 +33,16 @@ func (h *Handler) UploadOrder(ctx *gin.Context) {
 
 	bodyBytes, err := reader.GetBody(ctx.Request.Body)
 	if err != nil {
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Error in reading request body"})
-			h.logger.Error().
-				Err(err).
-				Str("source", source).
-				Msg("failed to read request body")
-			return
-		}
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Error in reading request body"})
+		h.logger.Error().
+			Err(err).
+			Str("source", source).
+			Msg("failed to read request body")
+		return
 	}
 
 	c, cancel := context.WithTimeout(ctx, h.config.CtxTimeOut)
 	defer cancel()
-
-	var username string
-	username, err = getUsername(ctx)
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": models.ErrNotAuthenticated})
-		h.logger.Error().
-			Err(err).
-			Str("source", source).
-			Send()
-		return
-	}
 
 	if err = h.service.UploadOrder(c, string(bodyBytes), username); err != nil {
 		var (

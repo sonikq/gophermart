@@ -21,6 +21,7 @@ type Option struct {
 }
 
 func NewRouter(option Option) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(middleware.CompressResponse(option.Logger), middleware.DecompressRequest(option.Logger))
@@ -50,7 +51,8 @@ func NewRouter(option Option) *gin.Engine {
 		authorized.POST("/orders", h.Gophermart.UploadOrder)
 		authorized.GET("/orders", h.Gophermart.ListOrders)
 		authorized.GET("/balance", h.Gophermart.GetBalance)
-		// TODO: implement missing handlers with auth
+		authorized.POST("/balance/withdraw", h.Gophermart.Withdraw)
+		authorized.GET("/withdrawals", h.Gophermart.GetWithdrawals)
 	}
 
 	return router

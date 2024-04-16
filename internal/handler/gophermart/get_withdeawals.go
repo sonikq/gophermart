@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func (h *Handler) GetBalance(ctx *gin.Context) {
-	const source = "handler.GetBalance"
+func (h *Handler) GetWithdrawals(ctx *gin.Context) {
+	const source = "handler.GetWithdrawals"
 
 	username, err := getUsername(ctx)
 	if err != nil {
@@ -23,14 +23,19 @@ func (h *Handler) GetBalance(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, h.config.CtxTimeOut)
 	defer cancel()
 
-	var response models.Balance
-	response, err = h.service.GetBalance(c, username)
+	var response []models.Withdrawal
+	response, err = h.service.GetWithdrawals(c, username)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Internal server error, something went wrong"})
 		h.logger.Error().
 			Err(err).
 			Str("source", source).
-			Msg("failed to get balance")
+			Msg("failed to get withdrawals")
+		return
+	}
+
+	if len(response) == 0 {
+		ctx.AbortWithStatusJSON(http.StatusNoContent, gin.H{"message": "No bonus points are written off"})
 		return
 	}
 

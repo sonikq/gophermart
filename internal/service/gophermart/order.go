@@ -7,6 +7,7 @@ import (
 	"github.com/sonikq/gophermart/pkg/validator"
 	"log"
 	"regexp"
+	"sync"
 )
 
 func (s *Service) UploadOrder(ctx context.Context, orderNum string, username string) error {
@@ -62,18 +63,30 @@ func (s *Service) UpdateUserOrders(ctx context.Context, username string) error {
 		}
 	}
 
+	var (
+		wg sync.WaitGroup
+		mu sync.Mutex
+	)
+
 	accrualInfos := make([]models.AccrualInfo, 0, len(actualOrders))
 	for _, order := range actualOrders {
-		var accrualInfo models.AccrualInfo
+		wg.Add(1)
 
-		accrualInfo, err = s.accrualClient.GetAccrualInfo(order.Number)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
+		go func(order models.Order) {
+			defer wg.Done()
+			accrualInfo, err := s.accrualClient.GetAccrualInfo(order.Number)
+			if err != nil {
+				log.Println(err)
+				return
+			}
 
-		accrualInfos = append(accrualInfos, accrualInfo)
+			mu.Lock()
+			accrualInfos = append(accrualInfos, accrualInfo)
+			mu.Unlock()
+		}(order)
 	}
+
+	wg.Wait()
 
 	if err = s.storage.UpdateOrders(ctx, username, accrualInfos); err != nil {
 		return err

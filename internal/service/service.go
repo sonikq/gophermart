@@ -14,6 +14,8 @@ type IGophermartService interface {
 	UploadOrder(ctx context.Context, orderNum string, username string) error
 	ListUserOrders(ctx context.Context, username string) ([]models.Order, error)
 	GetBalance(ctx context.Context, username string) (models.Balance, error)
+	Withdraw(ctx context.Context, request models.WithdrawRequest) error
+	GetWithdrawals(ctx context.Context, username string) ([]models.Withdrawal, error)
 }
 
 type Service struct {

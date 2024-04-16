@@ -6,6 +6,7 @@ import (
 	"github.com/sonikq/gophermart/internal/app/accrual"
 	"github.com/sonikq/gophermart/internal/config"
 	"github.com/sonikq/gophermart/internal/handler"
+	httpserv "github.com/sonikq/gophermart/internal/server/http"
 	"github.com/sonikq/gophermart/internal/service"
 	"github.com/sonikq/gophermart/internal/storage"
 	"github.com/sonikq/gophermart/pkg/logger"
@@ -13,7 +14,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 )
 
 func Run() {
@@ -33,7 +33,12 @@ func Run() {
 	}
 	defer store.Close()
 
-	accrualClient := accrual.NewClient(conf.AccrualSystemAddress)
+	workerPool := make(chan accrual.WorkerPool)
+	defer close(workerPool)
+
+	accrualClient := accrual.NewClient(conf.AccrualSystemAddress, workerPool)
+	go accrualClient.Run()
+
 	serviceManager := service.New(store, accrualClient)
 	router := handler.NewRouter(handler.Option{
 		Conf:    conf,
@@ -41,20 +46,16 @@ func Run() {
 		Service: serviceManager,
 	})
 
-	server := &http.Server{
-		Addr:           conf.RunAddress,
-		Handler:        router,
-		ReadTimeout:    15 * time.Second,
-		WriteTimeout:   15 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
+	server := httpserv.NewServer(conf.RunAddress, router)
 
 	go func() {
-		err = server.ListenAndServe()
+		err = server.Run()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			lg.Info().Err(err).Msg("failed to run http server")
 		}
 	}()
+
+	lg.Info().Msg("Server listening on " + conf.RunAddress)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

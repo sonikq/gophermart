@@ -24,26 +24,22 @@ func (h *Handler) Login(ctx *gin.Context) {
 
 	bodyBytes, err := reader.GetBody(ctx.Request.Body)
 	if err != nil {
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Error in reading request body"})
-			h.logger.Error().
-				Err(err).
-				Str("source", source).
-				Msg("failed to read request body")
-			return
-		}
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Error in reading request body"})
+		h.logger.Error().
+			Err(err).
+			Str("source", source).
+			Msg("failed to read request body")
+		return
 	}
 
 	var request models.LoginRequest
 	if err = json.Unmarshal(bodyBytes, &request); err != nil {
-		if err != nil {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
-			h.logger.Error().
-				Err(err).
-				Str("source", source).
-				Msg("failed to parse request body")
-			return
-		}
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request format"})
+		h.logger.Error().
+			Err(err).
+			Str("source", source).
+			Msg("failed to parse request body")
+		return
 	}
 
 	if err = request.Validate(); err != nil {

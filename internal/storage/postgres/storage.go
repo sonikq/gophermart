@@ -160,6 +160,7 @@ func (ps *Storage) UpdateOrders(ctx context.Context, username string, infos []mo
 	return tx.Commit(ctx)
 }
 
+// GetBalance - Getting the user's current balance
 func (ps *Storage) GetBalance(ctx context.Context, username string) (models.Balance, error) {
 	var balance models.Balance
 	err := ps.pool.QueryRow(ctx, getUserBalanceQuery, username).Scan(&balance.Current, &balance.Withdrawn)
@@ -172,6 +173,7 @@ func (ps *Storage) GetBalance(ctx context.Context, username string) (models.Bala
 	return balance, nil
 }
 
+// GetWithdrawals - Receiving information about withdrawal of funds
 func (ps *Storage) GetWithdrawals(ctx context.Context, username string) ([]models.Withdrawal, error) {
 	rows, err := ps.pool.Query(ctx, getWithdrawalsQuery, username)
 	if err != nil {
@@ -193,4 +195,14 @@ func (ps *Storage) GetWithdrawals(ctx context.Context, username string) ([]model
 	}
 
 	return withdrawals, nil
+}
+
+// Withdraw - Request for debiting funds
+func (ps *Storage) Withdraw(ctx context.Context, username, order string, sum, delta float64) error {
+	_, err := ps.pool.Exec(ctx, withdrawnQuery, order, username, delta, sum, time.Now())
+	if err != nil {
+		return fmt.Errorf("error in withdrawn query: %w", err)
+	}
+
+	return nil
 }

@@ -16,7 +16,7 @@ func IsAuthorized(log *logger.Logger, secretKey string) gin.HandlerFunc {
 		if rawToken == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized,
 				gin.H{
-					"error": models.ErrNotAuthenticated,
+					"error": models.ErrNotAuthenticated.Error(),
 				})
 			log.Error().
 				Str("source", source).
@@ -29,7 +29,7 @@ func IsAuthorized(log *logger.Logger, secretKey string) gin.HandlerFunc {
 		if len(s) != 2 || s[0] != "Bearer" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized,
 				gin.H{
-					"error": models.ErrNotAuthenticated,
+					"error": models.ErrNotAuthenticated.Error(),
 				})
 			log.Error().
 				Str("source", source).
@@ -43,7 +43,7 @@ func IsAuthorized(log *logger.Logger, secretKey string) gin.HandlerFunc {
 		username, err := auth.GetUsername(tkn, secretKey)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"error": models.ErrNotAuthenticated,
+				"error": models.ErrNotAuthenticated.Error(),
 			})
 			log.Error().
 				Str("source", source).

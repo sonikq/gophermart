@@ -12,7 +12,7 @@ func (h *Handler) ListOrders(ctx *gin.Context) {
 
 	username, err := getUsername(ctx)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": models.ErrNotAuthenticated})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": models.ErrNotAuthenticated.Error()})
 		h.logger.Error().
 			Err(err).
 			Str("source", source).

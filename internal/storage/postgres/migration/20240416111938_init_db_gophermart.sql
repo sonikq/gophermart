@@ -18,13 +18,15 @@ ALTER TABLE orders ADD CONSTRAINT fk_username FOREIGN KEY (username) REFERENCES 
 
 CREATE TABLE IF NOT EXISTS balances (
                                         id SERIAL PRIMARY KEY,
+                                        order_num TEXT NOT NULL,
                                         username TEXT NOT NULL UNIQUE,
                                         current_balance DOUBLE PRECISION DEFAULT 0,
-                                        withdrawn DOUBLE PRECISION DEFAULT 0,
+                                        withdrawal_sum DOUBLE PRECISION DEFAULT 0,
                                         withdraw_processed_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 ALTER TABLE balances ADD CONSTRAINT fk_username FOREIGN KEY (username) REFERENCES users(username);
+ALTER TABLE balances ADD CONSTRAINT fk_order_num FOREIGN KEY (order_num) REFERENCES orders(number);
 -- +goose StatementEnd
 
 -- +goose Down
