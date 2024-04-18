@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/sonikq/gophermart/internal/models"
 	"time"
 )
 
@@ -46,5 +46,5 @@ func GetUsername(tokenString, secretKey string) (string, error) {
 		return claims.Username, nil
 	}
 
-	return "", errors.New("invalid jwt-token")
+	return "", models.ErrInvalidJWTToken
 }

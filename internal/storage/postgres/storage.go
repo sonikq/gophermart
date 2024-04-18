@@ -93,7 +93,8 @@ func (ps *Storage) GetOrder(ctx context.Context, orderNumber string) (*models.Or
 
 // UploadOrder - uploading order
 func (ps *Storage) UploadOrder(ctx context.Context, orderNumber, username string) error {
-	_, err := ps.pool.Exec(ctx, uploadOrder, orderNumber, username, models.NewOrder, time.Now(), time.Now())
+	now := time.Now()
+	_, err := ps.pool.Exec(ctx, uploadOrder, orderNumber, username, models.NewOrder, now, now)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if ok := errors.As(err, &pgErr); ok {
@@ -161,16 +162,16 @@ func (ps *Storage) UpdateOrders(ctx context.Context, username string, infos []mo
 }
 
 // GetBalance - Getting the user's current balance
-func (ps *Storage) GetBalance(ctx context.Context, username string) (models.Balance, error) {
+func (ps *Storage) GetBalance(ctx context.Context, username string) (*models.Balance, error) {
 	var balance models.Balance
 	err := ps.pool.QueryRow(ctx, getUserBalanceQuery, username).Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return models.Balance{}, nil
+			return nil, nil
 		}
-		return models.Balance{}, fmt.Errorf("error in executing get balance query: %w", err)
+		return nil, fmt.Errorf("error in executing get balance query: %w", err)
 	}
-	return balance, nil
+	return nil, nil
 }
 
 // GetWithdrawals - Receiving information about withdrawal of funds

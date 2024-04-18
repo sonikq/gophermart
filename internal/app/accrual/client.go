@@ -10,11 +10,13 @@ import (
 	"time"
 )
 
+// Client - структура Accrual клиента
 type Client struct {
 	Client     *resty.Client
 	WorkerPool chan WorkerPool
 }
 
+// WorkerPool - структура запроса
 type WorkerPool struct {
 	URL      string
 	Request  *resty.Request
@@ -22,6 +24,7 @@ type WorkerPool struct {
 	Response chan *resty.Response
 }
 
+// NewClient - конструктор для Accrual сервиса
 func NewClient(serverAddress string, pool chan WorkerPool) *Client {
 	return &Client{
 		Client:     resty.New().SetBaseURL(serverAddress),
@@ -29,10 +32,12 @@ func NewClient(serverAddress string, pool chan WorkerPool) *Client {
 	}
 }
 
+// MakeRequest - функция для создания запроса по определенному URL
 func (w *WorkerPool) MakeRequest() (*resty.Response, error) {
 	return w.Request.Get(w.URL)
 }
 
+// Run - запуск сервиса Accrual
 func (c *Client) Run() {
 	for w := range c.WorkerPool {
 		resp, err := w.MakeRequest()
@@ -41,12 +46,13 @@ func (c *Client) Run() {
 	}
 }
 
+// GetAccrualInfo - контролирует количество запросов к сервису Accrual и формирует сам запрос, потом пишет все это в канал
 func (c *Client) GetAccrualInfo(orderNum string) (models.AccrualInfo, error) {
 	const (
 		source           = "accrual.GetAccrualInfo"
 		maxAttemptPerSec = 5
 	)
-
+	// Создаем тикер, чтобы можно было контролировать кол-во запросов в определенный промежуток времени
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 

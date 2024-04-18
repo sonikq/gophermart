@@ -67,9 +67,10 @@ func (s *Service) UpdateUserOrders(ctx context.Context, username string) error {
 		wg sync.WaitGroup
 		mu sync.Mutex
 	)
-
+	// создаем слайс уже с известной емкостью равной len(actualOrders)
 	accrualInfos := make([]models.AccrualInfo, 0, len(actualOrders))
 	for _, order := range actualOrders {
+		// добавляем горутину для обработки каждого заказа
 		wg.Add(1)
 
 		go func(order models.Order) {
@@ -80,12 +81,13 @@ func (s *Service) UpdateUserOrders(ctx context.Context, username string) error {
 				return
 			}
 
+			// захватываем мьютекс, чтобы не было одновременного чтения и записи в слайс
 			mu.Lock()
 			accrualInfos = append(accrualInfos, accrualInfo)
 			mu.Unlock()
 		}(order)
 	}
-
+	// ждем пока все горутины закончат свою работу
 	wg.Wait()
 
 	if err = s.storage.UpdateOrders(ctx, username, accrualInfos); err != nil {

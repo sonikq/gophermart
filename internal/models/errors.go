@@ -14,4 +14,5 @@ var (
 	ErrOrderAlreadyUploadedByThisUser    = errors.New("order has already been uploaded by this user")
 	ErrEmptyOrderList                    = errors.New("empty order list")
 	ErrInsufficientFunds                 = errors.New("insufficient funds in the account")
+	ErrInvalidJWTToken                   = errors.New("invalid jwt-token")
 )
