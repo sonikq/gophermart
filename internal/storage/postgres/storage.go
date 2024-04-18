@@ -162,16 +162,16 @@ func (ps *Storage) UpdateOrders(ctx context.Context, username string, infos []mo
 }
 
 // GetBalance - Getting the user's current balance
-func (ps *Storage) GetBalance(ctx context.Context, username string) (*models.Balance, error) {
+func (ps *Storage) GetBalance(ctx context.Context, username string) (models.Balance, error) {
 	var balance models.Balance
 	err := ps.pool.QueryRow(ctx, getUserBalanceQuery, username).Scan(&balance.Current, &balance.Withdrawn)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return models.Balance{}, nil
 		}
-		return nil, fmt.Errorf("error in executing get balance query: %w", err)
+		return models.Balance{}, fmt.Errorf("error in executing get balance query: %w", err)
 	}
-	return nil, nil
+	return balance, nil
 }
 
 // GetWithdrawals - Receiving information about withdrawal of funds

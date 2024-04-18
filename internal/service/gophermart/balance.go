@@ -6,9 +6,9 @@ import (
 	"github.com/sonikq/gophermart/internal/models"
 )
 
-func (s *Service) GetBalance(ctx context.Context, username string) (*models.Balance, error) {
+func (s *Service) GetBalance(ctx context.Context, username string) (models.Balance, error) {
 	if err := s.UpdateUserOrders(ctx, username); err != nil {
-		return nil, err
+		return models.Balance{}, err
 	}
 	return s.storage.GetBalance(ctx, username)
 }

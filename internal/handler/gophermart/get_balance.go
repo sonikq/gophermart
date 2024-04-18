@@ -23,7 +23,7 @@ func (h *Handler) GetBalance(ctx *gin.Context) {
 	c, cancel := context.WithTimeout(ctx, h.config.CtxTimeOut)
 	defer cancel()
 
-	var response *models.Balance
+	var response models.Balance
 	response, err = h.service.GetBalance(c, username)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "Internal server error, something went wrong"})

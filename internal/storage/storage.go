@@ -14,7 +14,7 @@ type IStorage interface {
 	UploadOrder(ctx context.Context, orderNumber, username string) error
 	ListUserOrders(ctx context.Context, username string) ([]models.Order, error)
 	UpdateOrders(ctx context.Context, username string, infos []models.AccrualInfo) error
-	GetBalance(ctx context.Context, username string) (*models.Balance, error)
+	GetBalance(ctx context.Context, username string) (models.Balance, error)
 	GetWithdrawals(ctx context.Context, username string) ([]models.Withdrawal, error)
 	Withdraw(ctx context.Context, username, order string, sum, delta float64) error
 	Close()
