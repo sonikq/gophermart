@@ -1,5 +1,5 @@
 # gophermart
-Cumulative loyalty system "Gofermart" at the rate of "Advanced Go-developer"
+Cumulative loyalty system "Gofermart".
 
 # Launch of the "Gofermart" service
 
